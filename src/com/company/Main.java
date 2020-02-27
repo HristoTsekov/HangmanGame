@@ -4,42 +4,41 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        String[] words = { "Аксаково", "Антоново", "Априлци", "Ардино", "Асеновград", "Ахелой", "Ахтопол",
-                "Балчик",  "Банско", "Баня", "Батак", "Бяла Слатина", "Белене", "Белица", "Белово", "Белоградчик", "Благоевград",
-                "Бойчиновци", "Болярово", "Борово", "Ботевград", "Брезово", "Брусарци", "Бургас", "Бухово", "Българово", "Бяла",
-                "Варна", "Велинград", "Ветово", "Велико Търново", "Видин", "Враца", "Върбица", "Вършец",
-                "Габрово", "Главиница", "Глоджево", "Годеч", "Грамада", "Гурково",
-                "Дебелец", "Девин", "Девня", "Джебел", "Димитровград",
-                "Земен", "Златарица", "Златица", "Златоград","Ивайловград", "Игнатиево", "Ихтиман",
-                "Каварна", "Казанлък",  "Камено", "Карлово", "Карнобат", "Каспичан", "Кермен", "Клисура",
-                "Китен", "Кнежа", "Козлодуй", "Койнаре", "Кресна", "Криводол", "Кубрат", "Куклен", "Кула", "Кърджали", "Кюстендил",
-                "Левски", "Ловеч", "Лом", "Маджарово", "Мартен", "Мелник", "Мездра",
-                "Меричлери", "Мизия", "Момчилград", "Монтана", "Мъглиж",
-                "Неделино", "Несебър","Павликени", "Пазарджик", "Разград",  "Русе",
-                "Садово", "Самоков", "Сандански", "Свиленград", "Силистра", "Симитли", "Славяново", "Смолян", "Созопол", "Сопот", "София", "Средец", "Стражица", "Стралджа",
-                "Твърдица", "Тервел", "Тетевен",  "Троян", "Трън",
-                "Шипка", "Шумен",
-                "Ябланица",  "Ямбол"};
-
+        String[] words = {"Благоевград", "Бургас", "Варна", "Велико Търново", "Видин",
+                "Враца", "Габрово", "Добрич", "Кърджали", "Кюстендил", "Ловеч", "Монтана",
+                "Пазарджик", "Перник", "Плевен", "Пловдив", "Разград", "Русе", "Сливен",
+                "Смолян", "София", "Стара Загора", "Търговище", "Шумен", "Ямбол"};
 
         int randomWordNumber = (int) (Math.random() * words.length);
 
-        play(words, randomWordNumber);
+        int tries = 0;
+        String word = words[randomWordNumber];
+        char[] enteredLetters = new char[word.length()];
+        int rounds = 0;
+        while (true) {
+            int player = rounds % 2;
+            tries = play(words, randomWordNumber, tries, enteredLetters, player);
+            if (tries == -1 || tries > 5) {
+                break;
+            }
+            rounds++;
+        }
     }
 
-    public static void play(String[] words, int randomWordNumber) {
-        char[] enteredLetters = new char[words[randomWordNumber].length()];
-        int triesCount = 0;
+    public static int play(String[] words, int randomWordNumber, int triesCount, char[] enteredLetters, int player) {
         boolean wordIsGuessed = false;
 
-        System.out.println("Вие започнахте играта \"Бесеница\".");
-        System.out.println("    _____ ");
-        System.out.println("    |   | ");
-        System.out.println("    |     ");
-        System.out.println("    |     ");
-        System.out.println("    |     ");
-        System.out.println("    |     ");
+        if (triesCount == 0) {
+            System.out.println("Вие започнахте играта \"Бесеница\".");
+            System.out.println("    _____ ");
+            System.out.println("    |   | ");
+            System.out.println("    |     ");
+            System.out.println("    |     ");
+            System.out.println("    |     ");
+            System.out.println("    |     ");
+        }
 
+        System.out.println("Играч " + (player + 1));
         do {
             switch (enterLetter(words[randomWordNumber], enteredLetters)) {
                 case 0:
@@ -93,6 +92,8 @@ public class Main {
                         wordIsGuessed = true;
                         break;
                     }
+
+                    return triesCount;
                 case 1:
                     break;
                 case 2:
@@ -104,9 +105,11 @@ public class Main {
         while (!wordIsGuessed);
         if (triesCount != 6) {
             System.out.print("\nТи победи!");
+            triesCount = -1;
         }
         System.out.println("\nДумата е " + "\"" + words[randomWordNumber] + "\"" + ".");
 
+        return triesCount;
     }
 
     public static boolean isCyrillic(char c) {
@@ -164,11 +167,10 @@ public class Main {
 
     public static int findEmptyPosition(char[] enteredLetters) {
         int i = 0;
-        while (enteredLetters[i] != '\u0000') i++;
+        while (i < enteredLetters.length && enteredLetters[i] != '\u0000') i++;
         return i;
 
     }
 }
-
 
 
