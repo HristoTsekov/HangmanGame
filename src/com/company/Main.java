@@ -12,19 +12,71 @@ public class Main {
         System.out.print("Играч 2: ");
         String playerTwo = input.nextLine();
         String[] players = {playerOne, playerTwo};
-        String wordToGuess = randomWord();
+        String wordToGuess = randomWord().toLowerCase();
+
         startGame(wordToGuess, players);
     }
 
     private static void startGame(String wordToGuess, String[] players) {
         char[] enteredLetters = new char[wordToGuess.length()];
 
+        for (int tries = 0; tries <= 5; tries++) {
 
-        for (int tries = 0; tries <= 6; tries++) {
-            System.out.println(players[tries % 2] + " е на ход");
-            printWord(wordToGuess, enteredLetters);
+
             printHangMan(tries);
+            int player = tries % 2;
+            System.out.println(players[player] + " е на ход");
+
+            boolean currentPlayerMove = true;
+            do{
+                printWord(wordToGuess, enteredLetters);
+                char playerLetter = enterLetter();
+                switch (validateLetter(wordToGuess, enteredLetters, playerLetter)) {
+                    case 0:
+
+                        break;
+                    case 1:
+                        break;
+                    case 2:
+                        currentPlayerMove = false;
+                        break;
+                }
+            } while(currentPlayerMove);
+
         }
+
+    }
+
+    public static int validateLetter(String wordToGuess, char[] enteredLetters, char playerLetter) {
+        wordToGuess = wordToGuess.toLowerCase();
+        int emptyPosition = findEmptyPosition(enteredLetters);
+
+        if (!isCyrillic(playerLetter) || playerLetter == '\u0000') {
+            System.out.println("Въведете буква на кирилица!");
+            return 0;
+        }
+        if (isEnteredLetter(playerLetter, enteredLetters)) {
+            System.out.println("\"" + playerLetter + "\"" + " вече е в думата");
+            return 0;
+        } if(isLetterGuessed(wordToGuess, playerLetter)){
+            enteredLetters[emptyPosition] = playerLetter;
+
+            return 1;
+        }
+        else {
+            System.out.println("\"" + playerLetter + "\"" + " я няма в думата.");
+            return 2;
+        }
+    }
+
+    public static boolean isLetterGuessed(String wordToGuess, char playerLetter){
+        return wordToGuess.indexOf(String.valueOf(playerLetter)) > -1;
+    }
+
+    public static char enterLetter() {
+        System.out.print("\nВъведете буква: ");
+        Scanner input = new Scanner(System.in);
+        return input.nextLine().toLowerCase().charAt(0);
     }
 
     private static void printHangMan(int tries) {
@@ -118,12 +170,21 @@ public class Main {
     }
 
     private static String randomWord() {
-        String[] words = {"Благоевград", "Бургас", "Варна", "Велико Търново", "Видин",
-                "Враца", "Габрово", "Добрич", "Кърджали", "Кюстендил", "Ловеч", "Монтана",
-                "Пазарджик", "Перник", "Плевен", "Пловдив", "Разград", "Русе", "Сливен",
+        String[] words = {//"Благоевград", "Бургас", "Варна", "Велико Търново", "Видин",
+               // "Враца", "Габрово", "Добрич", "Кърджали", "Кюстендил", "Ловеч", "Монтана",
+              //  "Пазарджик", "Перник", "Плевен", "Пловдив", "Разград", "Русе", "Сливен",
                 "Смолян", "София", "Стара Загора", "Търговище", "Шумен", "Ямбол"};
 
         int randomWordNumber = (int) (Math.random() * words.length);
         return words[randomWordNumber];
+    }
+
+    public static int findEmptyPosition(char[] enteredLetters) {
+        int i = 0;
+        while (i < enteredLetters.length && enteredLetters[i] != '\u0000') i++;
+        return i;
+    }
+    public static boolean isCyrillic(char c) {
+        return Character.UnicodeBlock.CYRILLIC.equals(Character.UnicodeBlock.of(c));
     }
 }
