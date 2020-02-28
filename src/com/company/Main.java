@@ -19,57 +19,54 @@ public class Main {
 
     private static void startGame(String wordToGuess, String[] players) {
         char[] enteredLetters = new char[wordToGuess.length()];
+        int guessedWords = 0;
 
         for (int tries = 0; tries <= 5; tries++) {
-
-
             printHangMan(tries);
             int player = tries % 2;
             System.out.println(players[player] + " е на ход");
-
             boolean currentPlayerMove = true;
-            do{
-                printWord(wordToGuess, enteredLetters);
-                char playerLetter = enterLetter();
-                switch (validateLetter(wordToGuess, enteredLetters, playerLetter)) {
-                    case 0:
+            do {
 
-                        break;
-                    case 1:
-                        break;
-                    case 2:
-                        currentPlayerMove = false;
-                        break;
+                String word = createWord(wordToGuess, enteredLetters);
+                if (!word.contains("*")) {
+                    System.out.println(players[player] + " печели");
+                    System.out.println("Думата е: " + wordToGuess);
+
+                    tries = 6;
+                    break;
                 }
-            } while(currentPlayerMove);
-
+                System.out.print("Познайте думата: " + word);
+                char playerLetter = enterLetter();
+                if (!validateLetter(wordToGuess, enteredLetters, playerLetter, guessedWords))
+                    currentPlayerMove = false;
+            } while (currentPlayerMove);
         }
-
     }
 
-    public static int validateLetter(String wordToGuess, char[] enteredLetters, char playerLetter) {
+    public static boolean validateLetter(String wordToGuess, char[] enteredLetters, char playerLetter, int guessedWords) {
         wordToGuess = wordToGuess.toLowerCase();
         int emptyPosition = findEmptyPosition(enteredLetters);
 
         if (!isCyrillic(playerLetter) || playerLetter == '\u0000') {
             System.out.println("Въведете буква на кирилица!");
-            return 0;
+            return true;
         }
         if (isEnteredLetter(playerLetter, enteredLetters)) {
             System.out.println("\"" + playerLetter + "\"" + " вече е в думата");
-            return 0;
-        } if(isLetterGuessed(wordToGuess, playerLetter)){
-            enteredLetters[emptyPosition] = playerLetter;
-
-            return 1;
+            return true;
         }
-        else {
+        if (isLetterGuessed(wordToGuess, playerLetter)) {
+            enteredLetters[emptyPosition] = playerLetter;
+            guessedWords++;
+            return true;
+        } else {
             System.out.println("\"" + playerLetter + "\"" + " я няма в думата.");
-            return 2;
+            return false;
         }
     }
 
-    public static boolean isLetterGuessed(String wordToGuess, char playerLetter){
+    public static boolean isLetterGuessed(String wordToGuess, char playerLetter) {
         return wordToGuess.indexOf(String.valueOf(playerLetter)) > -1;
     }
 
@@ -146,23 +143,29 @@ public class Main {
 
     }
 
-    public static void printWord(String wordToGuess, char[] enteredLetters) {
-        System.out.print("Познайте думата: ");
+    public static String createWord(String wordToGuess, char[] enteredLetters) {
+        //System.out.print("Познайте думата: ");
+        String word = "";
         for (int i = 0; i < wordToGuess.length(); i++) {
             char letter = wordToGuess.charAt(i);
             if (isEnteredLetter(letter, enteredLetters)) {
                 if (i == 0 || wordToGuess.charAt(i - 1) == ' ') {
-                    System.out.print(Character.toUpperCase(letter));
+                    word += Character.toUpperCase(letter);
+                    //System.out.print();
                 } else {
-                    System.out.print(letter);
+                    word += letter;
+                    //System.out.print(letter);
                 }
             } else if (letter == ' ') {
-                System.out.print(' ');
+                word += "";
+                //System.out.print(' ');
             } else {
-                System.out.print('*');
+                //System.out.print('*');
+                word += "*";
             }
         }
-        System.out.println();
+        return word;
+        //System.out.println();
     }
 
     public static boolean isEnteredLetter(char letter, char[] enteredLetters) {
@@ -171,8 +174,8 @@ public class Main {
 
     private static String randomWord() {
         String[] words = {//"Благоевград", "Бургас", "Варна", "Велико Търново", "Видин",
-               // "Враца", "Габрово", "Добрич", "Кърджали", "Кюстендил", "Ловеч", "Монтана",
-              //  "Пазарджик", "Перник", "Плевен", "Пловдив", "Разград", "Русе", "Сливен",
+                // "Враца", "Габрово", "Добрич", "Кърджали", "Кюстендил", "Ловеч", "Монтана",
+                //  "Пазарджик", "Перник", "Плевен", "Пловдив", "Разград", "Русе", "Сливен",
                 "Смолян", "София", "Стара Загора", "Търговище", "Шумен", "Ямбол"};
 
         int randomWordNumber = (int) (Math.random() * words.length);
@@ -184,6 +187,7 @@ public class Main {
         while (i < enteredLetters.length && enteredLetters[i] != '\u0000') i++;
         return i;
     }
+
     public static boolean isCyrillic(char c) {
         return Character.UnicodeBlock.CYRILLIC.equals(Character.UnicodeBlock.of(c));
     }
