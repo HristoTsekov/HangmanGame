@@ -12,40 +12,85 @@ public class Main {
         System.out.print("Играч 2: ");
         String playerTwo = input.nextLine();
         String[] players = {playerOne, playerTwo};
-        String wordToGuess = randomWord().toLowerCase();
 
-        startGame(wordToGuess, players);
+
+        playGame(players);
     }
 
-    private static void startGame(String wordToGuess, String[] players) {
-        char[] enteredLetters = new char[wordToGuess.length()];
-        int guessedWords = 0;
+    private static void playGame(String[] players) {
+        Scanner input = new Scanner(System.in);
+        char[] enteredLetters;
+        int[] scores = {0, 0};
+        boolean continueGame = true;
+        String wordToGuess;
 
-        for (int tries = 0; tries <= 5; tries++) {
-            printHangMan(tries);
-            int player = tries % 2;
-            System.out.println(players[player] + " е на ход");
-            boolean currentPlayerMove = true;
-            do {
+        System.out.println("Вие започнахте играта \"Бесеница\".");
+        int rounds = 1;
 
-                String word = createWord(wordToGuess, enteredLetters);
-                if (!word.contains("*")) {
-                    System.out.println(players[player] + " печели");
-                    System.out.println("Думата е: " + wordToGuess);
+        while (continueGame) {
+            System.out.println("Рунд " + rounds++);
+            wordToGuess = randomWord();
+            enteredLetters = new char[wordToGuess.length()];
 
-                    tries = 6;
-                    break;
+            for (int tries = 0; tries <= 5; tries++) {
+                printHangMan(tries);
+                int player = tries % 2;
+                System.out.println(players[player] + " е на ход");
+                boolean currentPlayerMove = true;
+                do {
+
+                    String word = createWord(wordToGuess.toLowerCase(), enteredLetters);
+                    if (!word.contains("*")) {
+                        scores[player]++;
+                        tries = 6;
+
+                        System.out.println(players[player] + " печели този рунд. Получава 1 точка.");
+                        System.out.println("Думата е: " + wordToGuess);
+                        printCurrentScore(players, scores);
+                        break;
+                    }
+                    System.out.print("Познайте думата: " + word);
+                    char playerLetter = enterLetter();
+                    if (!validateLetter(wordToGuess.toLowerCase(), enteredLetters, playerLetter))
+                        currentPlayerMove = false;
+                } while (currentPlayerMove);
+
+                if (tries == 5) {
+                    printHangMan(++tries);
+                    printCurrentScore(players, scores);
                 }
-                System.out.print("Познайте думата: " + word);
-                char playerLetter = enterLetter();
-                if (!validateLetter(wordToGuess, enteredLetters, playerLetter, guessedWords))
-                    currentPlayerMove = false;
-            } while (currentPlayerMove);
+            }
+
+            System.out.print("Искате ли да продължите да играете (д/н): ");
+            char continueAnswer = input.nextLine().toLowerCase().charAt(0);
+            while (continueAnswer != 'н' && continueAnswer != 'д') {
+                System.out.print("Моля въведете \"д\"(да) или \"н\"(не): ");
+                continueAnswer = input.nextLine().toLowerCase().charAt(0);
+            }
+
+            if (continueAnswer == 'н')
+                continueGame = false;
         }
+
+        printCurrentScore(players, scores);
+        announceWinner(players, scores);
+
     }
 
-    public static boolean validateLetter(String wordToGuess, char[] enteredLetters, char playerLetter, int guessedWords) {
-        wordToGuess = wordToGuess.toLowerCase();
+    public static void announceWinner(String[] players, int[] scores) {
+        if (scores[0] > scores[1])
+            System.out.println("Победителят е: " + players[0]);
+        else if (scores[0] == scores[1])
+            System.out.println("Резултатът е равен");
+        else System.out.println("Победителят е: " + players[1]);
+    }
+
+    public static void printCurrentScore(String[] players, int[] scores) {
+        System.out.println("Резултата е: " + players[0] + " " + scores[0] + " точки; " + players[1] + " " + scores[1] + " точки.");
+    }
+
+    public static boolean validateLetter(String wordToGuess, char[] enteredLetters, char playerLetter) {
+
         int emptyPosition = findEmptyPosition(enteredLetters);
 
         if (!isCyrillic(playerLetter) || playerLetter == '\u0000') {
@@ -58,7 +103,6 @@ public class Main {
         }
         if (isLetterGuessed(wordToGuess, playerLetter)) {
             enteredLetters[emptyPosition] = playerLetter;
-            guessedWords++;
             return true;
         } else {
             System.out.println("\"" + playerLetter + "\"" + " я няма в думата.");
@@ -79,7 +123,6 @@ public class Main {
     private static void printHangMan(int tries) {
         switch (tries) {
             case 0:
-                System.out.println("Вие започнахте играта \"Бесеница\".");
                 System.out.println("    _____ ");
                 System.out.println("    |   | ");
                 System.out.println("    |     ");
@@ -138,34 +181,35 @@ public class Main {
                 System.out.println("    |  / \\");
                 System.out.println("    |     ");
                 System.out.println("   GAME OVER");
+                System.out.println("Никой не печели точка в този рунд.");
                 break;
         }
 
     }
 
     public static String createWord(String wordToGuess, char[] enteredLetters) {
-        //System.out.print("Познайте думата: ");
+
         String word = "";
         for (int i = 0; i < wordToGuess.length(); i++) {
             char letter = wordToGuess.charAt(i);
             if (isEnteredLetter(letter, enteredLetters)) {
                 if (i == 0 || wordToGuess.charAt(i - 1) == ' ') {
                     word += Character.toUpperCase(letter);
-                    //System.out.print();
+
                 } else {
                     word += letter;
-                    //System.out.print(letter);
+
                 }
             } else if (letter == ' ') {
-                word += "";
-                //System.out.print(' ');
+                word += " ";
+
             } else {
-                //System.out.print('*');
+
                 word += "*";
             }
         }
         return word;
-        //System.out.println();
+
     }
 
     public static boolean isEnteredLetter(char letter, char[] enteredLetters) {
@@ -173,9 +217,9 @@ public class Main {
     }
 
     private static String randomWord() {
-        String[] words = {//"Благоевград", "Бургас", "Варна", "Велико Търново", "Видин",
-                // "Враца", "Габрово", "Добрич", "Кърджали", "Кюстендил", "Ловеч", "Монтана",
-                //  "Пазарджик", "Перник", "Плевен", "Пловдив", "Разград", "Русе", "Сливен",
+        String[] words = {"Благоевград", "Бургас", "Варна", "Велико Търново", "Видин",
+                "Враца", "Габрово", "Добрич", "Кърджали", "Кюстендил", "Ловеч", "Монтана",
+                "Пазарджик", "Перник", "Плевен", "Пловдив", "Разград", "Русе", "Сливен",
                 "Смолян", "София", "Стара Загора", "Търговище", "Шумен", "Ямбол"};
 
         int randomWordNumber = (int) (Math.random() * words.length);
